@@ -320,29 +320,101 @@
       }
 
       /*
-      ── Screenshot Gallery ──
-      Supports 1-5 images. Layout auto-adapts:
-        1 image  → full width
-        2 images → 2 columns
-        3 images → 1 full-width + 2 half
-        4 images → 2×2 grid
-        5 images → 1 full-width + 2×2
+      ── Screenshot Slider ──
+      Each project gallery is now a slider with navigation
     */
       .project-gallery {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+      }
+      .slider-container {
+        display: flex;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
       }
       .project-gallery .project-screenshot {
-        min-height: 250px;
-        max-height: 400px;
+        min-width: 100%;
+        flex-shrink: 0;
       }
-      .project-gallery .project-screenshot:only-child {
-        grid-column: 1 / -1;
+
+      /* Slider Navigation Arrows */
+      .slider-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(99, 102, 241, 0.9);
+        color: #fff;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        z-index: 10;
+        opacity: 0;
+        backdrop-filter: blur(8px);
       }
-      /* When 3 or 5 images: first one spans full width */
-      .project-gallery .project-screenshot.span-full {
-        grid-column: 1 / -1;
+      .project-gallery:hover .slider-arrow {
+        opacity: 1;
+      }
+      .slider-arrow:hover {
+        background: rgba(168, 85, 247, 1);
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+      }
+      .slider-arrow.prev {
+        left: 16px;
+      }
+      .slider-arrow.next {
+        right: 16px;
+      }
+      .slider-arrow:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+      .slider-arrow:disabled:hover {
+        transform: translateY(-50%);
+        background: rgba(99, 102, 241, 0.9);
+      }
+      .slider-arrow svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* Slider Dots */
+      .slider-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .slider-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        padding: 0;
+      }
+      .slider-dot:hover {
+        background: rgba(255, 255, 255, 0.4);
+      }
+      .slider-dot.active {
+        background: #a855f7;
+        width: 24px;
+        border-radius: 4px;
+      }
+
+      /* Hide controls if only one image */
+      .project-gallery.single-image .slider-arrow,
+      .project-gallery.single-image .slider-dots {
+        display: none;
       }
 
       .project-info {
@@ -622,11 +694,15 @@
           direction: ltr;
           gap: 28px;
         }
-        .project-gallery {
-          grid-template-columns: 1fr;
+        .slider-arrow {
+          width: 36px;
+          height: 36px;
         }
-        .project-gallery .project-screenshot.span-full {
-          grid-column: auto;
+        .slider-arrow.prev {
+          left: 8px;
+        }
+        .slider-arrow.next {
+          right: 8px;
         }
       }
 
@@ -688,89 +764,79 @@
 
         <!--
         ╔═══════════════════════════════════════════════════════════════╗
-        ║  HOW TO ADD SCREENSHOTS                                      ║
+        ║  HOW TO ADD SCREENSHOTS TO THE SLIDER                        ║
         ║                                                               ║
         ║  1. Put your images in an "images/" folder next to this file  ║
-        ║  2. Inside any <div class="project-gallery">, add up to 5    ║
-        ║     screenshot slots. Each slot looks like:                   ║
+        ║  2. Inside <div class="slider-container">, add screenshots:   ║
         ║                                                               ║
         ║     <div class="project-screenshot">                         ║
         ║       <img src="images/your-image.png" alt="Description" />  ║
         ║     </div>                                                    ║
         ║                                                               ║
-        ║  3. To make an image span the full width of the gallery,     ║
-        ║     add the class "span-full":                               ║
+        ║  3. Navigation arrows and dots are automatically generated    ║
+        ║     Users can click arrows or dots to navigate images         ║
         ║                                                               ║
-        ║     <div class="project-screenshot span-full">               ║
-        ║       <img src="images/your-image.png" alt="Description" />  ║
-        ║     </div>                                                    ║
-        ║                                                               ║
-        ║  LAYOUT EXAMPLES:                                            ║
-        ║   1 image  → 1 span-full                                    ║
-        ║   2 images → 2 regular (side by side)                        ║
-        ║   3 images → 1 span-full + 2 regular                        ║
-        ║   4 images → 4 regular (2×2 grid)                           ║
-        ║   5 images → 1 span-full + 4 regular (2×2)                  ║
+        ║  Example structure:                                          ║
+        ║    <div class="project-gallery">                             ║
+        ║      <div class="slider-container">                          ║
+        ║        <div class="project-screenshot">...</div>             ║
+        ║        <div class="project-screenshot">...</div>             ║
+        ║      </div>                                                   ║
+        ║      <button class="slider-arrow prev">...</button>          ║
+        ║      <button class="slider-arrow next">...</button>          ║
+        ║      <div class="slider-dots"></div>                         ║
+        ║    </div>                                                     ║
         ╚═══════════════════════════════════════════════════════════════╝
       -->
 
         <!-- ── Project 2: Article Hub ── -->
         <div class="project-item fade-in">
           <div class="project-gallery">
-            <!-- Screenshot 1 (full width) — Replace with: <img src="images/article-hub-1.png" alt="Article Hub home page" /> -->
-            <div class="project-screenshot span-full">
-              <div class="screenshot-placeholder">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <path d="m21 15-5-5L5 21" />
-                </svg>
-                <span>Screenshot 1 — home page</span>
+            <div class="slider-container">
+              <!-- Screenshot 1 — Replace with: <img src="images/article-hub-1.png" alt="Article Hub home page" /> -->
+              <div class="project-screenshot">
+                <img
+                  src="ArticleHub1.png"
+                  alt="Activity Tracker main dashboard"
+                />
+              </div>
+              <!-- Screenshot 2 — Replace with: <img src="images/article-hub-2.png" alt="Article editor" /> -->
+              <div class="project-screenshot">
+                <img
+                  src="ArticleHub2.png"
+                  alt="Activity Tracker main dashboard"
+                />
+              </div>
+              <!-- Screenshot 3 — Replace with: <img src="images/article-hub-3.png" alt="Notifications" /> -->
+              <div class="project-screenshot">
+                <img
+                  src="ArticleHub3.png"
+                  alt="Activity Tracker main dashboard"
+                />
               </div>
             </div>
-            <!-- Screenshot 2 — Replace with: <img src="images/article-hub-2.png" alt="Article editor" /> -->
-            <div class="project-screenshot">
-              <div class="screenshot-placeholder">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <path d="m21 15-5-5L5 21" />
-                </svg>
-                <span>Screenshot 2</span>
-              </div>
-            </div>
-            <!-- Screenshot 3 — Replace with: <img src="images/article-hub-3.png" alt="Notifications" /> -->
-            <div class="project-screenshot">
-              <div class="screenshot-placeholder">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <path d="m21 15-5-5L5 21" />
-                </svg>
-                <span>Screenshot 3</span>
-              </div>
-            </div>
+            <!-- Slider Controls -->
+            <button class="slider-arrow prev" aria-label="Previous image">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button class="slider-arrow next" aria-label="Next image">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+            <div class="slider-dots"></div>
           </div>
           <div class="project-info">
             <div class="project-number">Project 02</div>
@@ -789,7 +855,6 @@
               <span class="tag">Firebase</span>
             </div>
             <div class="project-links">
-              <a href="#">Live Demo ↗</a>
               <a href="#">GitHub ↗</a>
             </div>
           </div>
@@ -798,26 +863,50 @@
         <!-- ── Project 3: Activity Tracker ── -->
         <div class="project-item fade-in">
           <div class="project-gallery">
-            <!-- Screenshot 1 (full width) -->
-            <div class="project-screenshot span-full">
-              <img src="01.png" alt="Activity Tracker main dashboard" />
+            <div class="slider-container">
+              <!-- Screenshot 1 -->
+              <div class="project-screenshot">
+                <img src="01.png" alt="Activity Tracker main dashboard" />
+              </div>
+              <!-- Screenshot 2 -->
+              <div class="project-screenshot">
+                <img src="02.png" alt="Activity detail view" />
+              </div>
+              <!-- Screenshot 3 -->
+              <div class="project-screenshot">
+                <img src="03.png" alt="Activity tracking screen" />
+              </div>
+              <!-- Screenshot 4 -->
+              <div class="project-screenshot">
+                <img src="04.png" alt="Activity statistics" />
+              </div>
+              <!-- Screenshot 5 -->
+              <div class="project-screenshot">
+                <img src="05.png" alt="Activity summary" />
+              </div>
             </div>
-            <!-- Screenshot 2 -->
-            <div class="project-screenshot">
-              <img src="02.png" alt="Activity detail view" />
-            </div>
-            <!-- Screenshot 3 -->
-            <div class="project-screenshot">
-              <img src="03.png" alt="Activity tracking screen" />
-            </div>
-            <!-- Screenshot 4 -->
-            <div class="project-screenshot">
-              <img src="04.png" alt="Activity statistics" />
-            </div>
-            <!-- Screenshot 5 -->
-            <div class="project-screenshot">
-              <img src="05.png" alt="Activity summary" />
-            </div>
+            <!-- Slider Controls -->
+            <button class="slider-arrow prev" aria-label="Previous image">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button class="slider-arrow next" aria-label="Next image">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+            <div class="slider-dots"></div>
           </div>
           <div class="project-info">
             <div class="project-number">Project 03</div>
@@ -834,10 +923,6 @@
               <span class="tag">Firebase</span>
               <span class="tag">PostgreSQL</span>
               <span class="tag">Drizzle</span>
-            </div>
-            <div class="project-links">
-              <a href="#">Live Demo ↗</a>
-              <a href="#">GitHub ↗</a>
             </div>
           </div>
         </div>
@@ -935,7 +1020,7 @@
                 emreozer@cmail.carleton.ca
               </a>
               <a
-                href="https://github.com/yourusername"
+                href="https://github.com/muaxz"
                 target="_blank"
                 class="contact-link"
               >
@@ -947,7 +1032,7 @@
                 GitHub
               </a>
               <a
-                href="https://linkedin.com/in/yourusername"
+                href="https://www.linkedin.com/in/emreeozer/"
                 target="_blank"
                 class="contact-link"
               >
@@ -1036,6 +1121,100 @@
         document.querySelector("nav").style.boxShadow =
           window.scrollY > 20 ? "0 4px 30px rgba(0,0,0,0.3)" : "none";
       });
+
+      // Screenshot Slider functionality
+      function initSlider(gallery) {
+        const container = gallery.querySelector(".slider-container");
+        const screenshots = container.querySelectorAll(".project-screenshot");
+        const prevBtn = gallery.querySelector(".slider-arrow.prev");
+        const nextBtn = gallery.querySelector(".slider-arrow.next");
+        const dotsContainer = gallery.querySelector(".slider-dots");
+        let currentIndex = 0;
+
+        // If only one image, hide controls and return
+        if (screenshots.length <= 1) {
+          gallery.classList.add("single-image");
+          return;
+        }
+
+        // Create dots
+        screenshots.forEach((_, index) => {
+          const dot = document.createElement("button");
+          dot.classList.add("slider-dot");
+          dot.setAttribute("aria-label", `Go to image ${index + 1}`);
+          if (index === 0) dot.classList.add("active");
+          dot.addEventListener("click", () => goToSlide(index));
+          dotsContainer.appendChild(dot);
+        });
+
+        const dots = dotsContainer.querySelectorAll(".slider-dot");
+
+        function updateSlider() {
+          container.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+          // Update dots
+          dots.forEach((dot, index) => {
+            dot.classList.toggle("active", index === currentIndex);
+          });
+
+          // Update arrow states
+          prevBtn.disabled = currentIndex === 0;
+          nextBtn.disabled = currentIndex === screenshots.length - 1;
+        }
+
+        function goToSlide(index) {
+          currentIndex = index;
+          updateSlider();
+        }
+
+        function nextSlide() {
+          if (currentIndex < screenshots.length - 1) {
+            currentIndex++;
+            updateSlider();
+          }
+        }
+
+        function prevSlide() {
+          if (currentIndex > 0) {
+            currentIndex--;
+            updateSlider();
+          }
+        }
+
+        // Event listeners
+        prevBtn.addEventListener("click", prevSlide);
+        nextBtn.addEventListener("click", nextSlide);
+
+        // Keyboard navigation
+        gallery.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowLeft") prevSlide();
+          if (e.key === "ArrowRight") nextSlide();
+        });
+
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        container.addEventListener("touchstart", (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+        });
+
+        container.addEventListener("touchend", (e) => {
+          touchEndX = e.changedTouches[0].screenX;
+          handleSwipe();
+        });
+
+        function handleSwipe() {
+          if (touchStartX - touchEndX > 50) nextSlide();
+          if (touchEndX - touchStartX > 50) prevSlide();
+        }
+
+        // Initialize
+        updateSlider();
+      }
+
+      // Initialize all sliders
+      document.querySelectorAll(".project-gallery").forEach(initSlider);
     </script>
   </body>
 </html>
